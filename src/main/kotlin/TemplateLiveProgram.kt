@@ -61,11 +61,11 @@ fun main() = application {
         mouse.moved.listen { mouseState = "move" }
 // END //////////////
         val columnCount = 6
-        val rowCount = 1
+        val rowCount = 6
         val marginX = 10.0
         val marginY = 10.0
-        val gutterX = 3.0
-        val gutterY = 3.0
+        val gutterX = 0.0
+        val gutterY = 0.0
         var grid = drawer.bounds.grid(columnCount, rowCount, marginX, marginY, gutterX, gutterY)
         val flatGrid: List<Rectangle> = grid.flatten()
 
@@ -122,10 +122,14 @@ fun main() = application {
         var normalizedAverage = 0.0
 
         val tracker = ADSRTracker(this)
-        tracker.attack = 0.00
+        tracker.attack = 0.001
         tracker.decay = 0.55
         tracker.sustain = 0.0
         tracker.release = 0.99
+//        tracker.attack = 0.001
+//        tracker.decay = 0.55
+//        tracker.sustain = 0.0
+//        tracker.release = 0.99
         var isTriggerOn = false
         val kickThresh = 0.75
 
@@ -220,23 +224,23 @@ fun main() = application {
 
 
             drawer.pushTransforms()
-            drawer.scale(7.0)
+            drawer.scale(1.0)
             val speed = 0.1 // Control the scroll speed
-            val circleRadius = 20.0
+            var circleRadius = 20.0
             drawer.fill = paletteStudio.foreground
-            drawer.translate(circleRadius* 0.5, circleRadius* 0.5)
-            drawer.translate(-drawer.bounds.center * Vector2(0.2, -0.05))
-            flatGrid.forEach { r ->
+            drawer.translate(circleRadius * 0.75, circleRadius * 1.0)
+//            drawer.translate(-drawer.bounds.center * Vector2(0.2, 0.05))
+            flatGrid.forEachIndexed { i, r ->
                 drawer.pushTransforms()
-//                val xPos = (drawer.bounds.center.x * 0.5 + r.x + animArr[0].pathSlider * width) % width
-                val xPos = animArr[0].whole * ( width*0.3 )
+                val xPos = (drawer.bounds.center.x * 0.5 + r.x + animArr[0].pathSlider * width*0.05) % width
+//                val xPos = animArr[0].whole * ( width*0.2 * *(i*0.22 )
                 drawer.translate(xPos, 0.0)
-                drawer.circle(Vector2(r.x, r.y), circleRadius + (animArr[2].whole.map(
+                drawer.circle(Vector2(r.x, r.y), circleRadius + (animArr[0].whole.map(
                     0.0,
                     1.0,
-                    -20.0,
-                    60.0
-                )))
+                    -2.0,
+                    10.0
+                ) * (i*0.22)))
                 drawer.popTransforms()
             }
             drawer.popTransforms()
