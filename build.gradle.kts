@@ -112,6 +112,11 @@ dependencies {
 //    implementation(libs.gson)
 //    implementation(libs.csv)
 
+
+    implementation("net.compartmental.code:minim:2.2.2") {
+        exclude(group = "org.apache.maven.plugins", module = "maven-javadoc-plugin")
+    }
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.slf4j.api)
     implementation(libs.kotlin.logging)
