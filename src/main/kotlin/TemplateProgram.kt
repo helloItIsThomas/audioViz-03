@@ -47,6 +47,10 @@ fun main() = application {
         var nextRadius = 0.0
         var minRadius = Double.MAX_VALUE
         var maxRadius = Double.MIN_VALUE
+        var minAverage = Double.MAX_VALUE
+        var maxAverage = Double.MIN_VALUE
+        var normalizedAverage = 0.0
+
 
         extend {
             drawer.clear(ColorRGBa.BLACK)
@@ -58,54 +62,63 @@ fun main() = application {
             val scaleFactor = 10.0  // Increase to "zoom in" on a frequency range
             val interpFactor = 1  // Number of interpolated l nes between each real band
 
+            var sum = 0.0
+            var count = 0
+
             for (i in 0 until fft.specSize()) {
-                val realBandHeight = fft.getBand(i)
+                val realBandHeight = fft.getBand(i) * 4
 
-                // Draw the real band
-                drawer.lineSegment(
-                    i * scaleFactor, height.toDouble(),
-                    i * scaleFactor, (height - realBandHeight).toDouble()
-                )
-
-                // Interpolate between this band and the next band
-//                if (i < fft.specSize() - 1) {
-//                    val nextRealBandHeight = fft.getBand(i + 1) * 4
-//                    for (j in 1 until interpFactor + 1) {
-//                        val interpHeight =
-//                            realBandHeight + (nextRealBandHeight - realBandHeight) * (j / (interpFactor + 1.0))
-//                        drawer.lineSegment(
-//                            (i * scaleFactor) + (scaleFactor / (interpFactor + 1) * j), height.toDouble(),
-//                            (i * scaleFactor) + (scaleFactor / (interpFactor + 1) * j), height - interpHeight
-//                        )
-//                    }
-//                }
-            }
-
-
-            if (counter % n == 0) {
-                val lowerBound = (40 * fft.timeSize() / lineIn.sampleRate()).toInt()
-                val upperBound = (60 * fft.timeSize() / lineIn.sampleRate()).toInt()
-                nextRadius = (lowerBound..upperBound).map { fft.getBand(it) }.average()
-
-                // Update min and max for normalization
-                minRadius = min(minRadius, nextRadius)
-                maxRadius = max(maxRadius, nextRadius)
-
-                val alpha = 0.3  // Smoothing factor between 0 and 1
-                currentRadius = alpha * nextRadius + (1 - alpha) * currentRadius  // EMA smoothing
-
-                // Normalize
-                if (maxRadius > minRadius) {
-                    currentRadius = (currentRadius - minRadius) / (maxRadius - minRadius)
+                if (i < fft.specSize() * 0.01) {
+                    sum += realBandHeight
+                    count++
+                    drawer.lineSegment(
+                        i * scaleFactor, height.toDouble(),
+                        i * scaleFactor, (height - realBandHeight).toDouble()
+                    )
                 }
             }
-            counter++
 
-            println(currentRadius)
+            val average = if (count > 0) sum / count else 0.0
 
-            drawer.stroke = null
-            drawer.fill = ColorRGBa.PINK
-            drawer.circle(drawer.bounds.center, currentRadius * 300.0)
+            // Update min and max for normalization
+            minAverage = min(minAverage, average)
+            maxAverage = max(maxAverage, average)
+
+            // Normalize
+            if (maxAverage > minAverage) {
+                normalizedAverage = (average - minAverage) / (maxAverage - minAverage)
+            }
+
+            println( normalizedAverage )
+            if(normalizedAverage > 0.6){
+                drawer.circle(drawer.bounds.center, 100.0)
+            }
+//
+//            if (counter % n == 0) {
+//                val lowerBound = (40 * fft.timeSize() / lineIn.sampleRate()).toInt()
+//                val upperBound = (60 * fft.timeSize() / lineIn.sampleRate()).toInt()
+//                nextRadius = (lowerBound..upperBound).map { fft.getBand(it) }.average()
+//
+//                // Update min and max for normalization
+//                minRadius = min(minRadius, nextRadius)
+//                maxRadius = max(maxRadius, nextRadius)
+//
+//                val alpha = 0.3  // Smoothing factor between 0 and 1
+//                currentRadius = alpha * nextRadius + (1 - alpha) * currentRadius  // EMA smoothing
+//
+//                // Normalize
+//                if (maxRadius > minRadius) {
+//                    currentRadius = (currentRadius - minRadius) / (maxRadius - minRadius)
+//                }
+////                println(lowerBound)
+//            }
+//            counter++
+//
+//
+//
+//            drawer.stroke = null
+//            drawer.fill = ColorRGBa.PINK
+//            drawer.circle(drawer.bounds.center, currentRadius * 300.0)
 
 
 //            val lowerBound = (40 * fft.timeSize() / lineIn.sampleRate()).toInt()
