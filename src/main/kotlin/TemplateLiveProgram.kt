@@ -13,6 +13,7 @@ import org.openrndr.draw.font.loadFace
 import org.openrndr.extra.envelopes.ADSRTracker
 import org.openrndr.extra.noise.random
 import org.openrndr.extra.olive.oliveProgram
+import org.openrndr.extra.palette.PaletteStudio
 import org.openrndr.extra.shapes.grid
 import org.openrndr.extra.shapes.rectify.RectifiedContour
 import org.openrndr.extra.shapes.rectify.rectified
@@ -44,6 +45,12 @@ fun main() = application {
         multisample = WindowMultisample.SampleCount(4)
     }
     oliveProgram {
+        val paletteStudio = PaletteStudio(
+            loadDefault = true, // Loads the first collection of palettes. [default -> true]
+            sortBy = PaletteStudio.SortBy.DARKEST, // Sorts the colors by luminance. [default -> PaletteStudio.SortBy.NO_SORTING]
+            collection = PaletteStudio.Collections.TWO, // Chooses which collection to load [default -> Collections.ONE]
+            colorCountConstraint = 6 // Constraints the number of colors in the palette [default -> 0]
+        )
 // MOUSE STUFF //////
         var mouseClick = false
         var mouseState = "up"
@@ -125,7 +132,9 @@ fun main() = application {
 
         // // // // //
 
-
+        for(n in 0..100){
+            println("   ")
+        }
 
         extend {
             animArr.forEachIndexed { i, a ->
@@ -134,11 +143,27 @@ fun main() = application {
                         * 0.7 // INLINE SKETCHY
                         ) % loopDelay)
             }
-            drawer.clear(ColorRGBa.TRANSPARENT)
-            drawer.circle(drawer.bounds.center, 10.0)
+
+//            println(String.format("%.3f", tracker.value()))
+//            if(tracker.value() < 0.25){
+//                drawer.clear(ColorRGBa.BLACK)
+//                drawer.clear(paletteStudio.background.opacify(animArr[0].whole
+//                    .map(
+//                    0.0,
+//                    1.0,
+//                    1.0,
+//                    0.0
+//                    )
+//                ))
+//            } else drawer.clear(paletteStudio.fore.opacify(animArr[0].whole))
+            drawer.clear(ColorRGBa.BLACK)
+            drawer.clear(paletteStudio.background.mix(paletteStudio.foreground, animArr[0].whole))
+            print("\r${String.format("%.3f", tracker.value())}")
+
             drawer.stroke = white
 
-            drawer.clear(ColorRGBa.BLACK)
+
+
 
             fft.forward(lineIn.mix)
 
@@ -179,29 +204,39 @@ fun main() = application {
 //            if(normalizedAverage > 0.6){
 //                drawer.circle(drawer.bounds.center, 100.0)
 //            }
+//            paletteStudio.randomPalette()
             if (normalizedAverage > kickThresh && !isTriggerOn) {
                 tracker.triggerOn()
+//                paletteStudio.randomPalette()
                 isTriggerOn = true
             } else if (normalizedAverage <= kickThresh && isTriggerOn) {
                 tracker.triggerOff()
+//                paletteStudio.randomize()
+//                paletteStudio.nextColor2Index
                 isTriggerOn = false
             }
 
-            println(sum)
+//            println(sum)
 
 
             drawer.pushTransforms()
-            drawer.scale(2.0)
+            drawer.scale(7.0)
             val speed = 0.1 // Control the scroll speed
             val circleRadius = 20.0
+            drawer.fill = paletteStudio.foreground
             drawer.translate(circleRadius* 0.5, circleRadius* 0.5)
-            drawer.translate(-drawer.bounds.center * Vector2(0.2, 0.0))
+            drawer.translate(-drawer.bounds.center * Vector2(0.2, -0.05))
             flatGrid.forEach { r ->
                 drawer.pushTransforms()
 //                val xPos = (drawer.bounds.center.x * 0.5 + r.x + animArr[0].pathSlider * width) % width
                 val xPos = animArr[0].whole * ( width*0.3 )
                 drawer.translate(xPos, 0.0)
-                drawer.circle(Vector2(r.x, r.y), circleRadius)
+                drawer.circle(Vector2(r.x, r.y), circleRadius + (animArr[2].whole.map(
+                    0.0,
+                    1.0,
+                    -20.0,
+                    60.0
+                )))
                 drawer.popTransforms()
             }
             drawer.popTransforms()
