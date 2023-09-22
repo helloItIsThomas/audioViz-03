@@ -6,6 +6,7 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.loadFont
 import org.openrndr.draw.loadImage
 import org.openrndr.draw.tint
+import org.openrndr.extra.envelopes.ADSRTracker
 import org.openrndr.extra.olive.oliveProgram
 import org.openrndr.math.IntVector2
 import org.openrndr.math.Vector2
@@ -51,6 +52,15 @@ fun main() = application {
         var maxAverage = Double.MIN_VALUE
         var normalizedAverage = 0.0
 
+        val tracker = ADSRTracker(this)
+        tracker.attack = 0.00
+        tracker.decay = 0.5
+        tracker.sustain = 0.0
+        tracker.release = 0.4
+        var isTriggerOn = false
+        val kickThresh = 0.75
+
+
 
         extend {
             drawer.clear(ColorRGBa.BLACK)
@@ -89,10 +99,25 @@ fun main() = application {
                 normalizedAverage = (average - minAverage) / (maxAverage - minAverage)
             }
 
-            println( normalizedAverage )
-            if(normalizedAverage > 0.6){
-                drawer.circle(drawer.bounds.center, 100.0)
+
+//            println( normalizedAverage )
+//            if(normalizedAverage > 0.6){
+//                drawer.circle(drawer.bounds.center, 100.0)
+//            }
+            if (normalizedAverage > kickThresh && !isTriggerOn) {
+                tracker.triggerOn()
+                isTriggerOn = true
+            } else if (normalizedAverage <= kickThresh && isTriggerOn) {
+                tracker.triggerOff()
+                isTriggerOn = false
             }
+
+            println(sum)
+
+
+
+            drawer.circle(drawer.bounds.center, (tracker.value() * 100.0))// + (sum * 0.005))
+
 //
 //            if (counter % n == 0) {
 //                val lowerBound = (40 * fft.timeSize() / lineIn.sampleRate()).toInt()
