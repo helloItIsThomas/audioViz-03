@@ -19,6 +19,7 @@ import org.openrndr.extra.shapes.rectify.rectified
 import org.openrndr.math.IntVector2
 import org.openrndr.math.Matrix44
 import org.openrndr.math.Vector2
+import org.openrndr.math.map
 import org.openrndr.math.transforms.scale
 import org.openrndr.shape.Circle
 import org.openrndr.shape.Rectangle
@@ -52,14 +53,14 @@ fun main() = application {
         mouse.buttonDown.listen { mouseState = "down" }
         mouse.moved.listen { mouseState = "move" }
 // END //////////////
-        val columnCount = 3
-        val rowCount = 3
+        val columnCount = 6
+        val rowCount = 1
         val marginX = 10.0
         val marginY = 10.0
         val gutterX = 3.0
         val gutterY = 3.0
         var grid = drawer.bounds.grid(columnCount, rowCount, marginX, marginY, gutterX, gutterY)
-        val flatGrid = grid.flatten()
+        val flatGrid: List<Rectangle> = grid.flatten()
 
         val incremCheck = onceObj()
         var palette = listOf(ColorRGBa.fromHex(0xF1934B), ColorRGBa.fromHex(0x0E8847), ColorRGBa.fromHex(0xD73E1C), ColorRGBa.fromHex(0xF4ECDF), ColorRGBa.fromHex(0x552F20))
@@ -76,7 +77,7 @@ fun main() = application {
         val image = loadImage("data/images/cheeta.jpg")
         val scale: DoubleArray = typeScale(3, 100.0, 3)
         val typeFace: Pair<List<FontMap>, List<FontImageMap>> = defaultTypeSetup(scale, listOf("reg", "reg", "bold"))
-        val animArr = mutableListOf<Animation>()
+        val animArr: MutableList<Animation> = mutableListOf<Animation>()
         val randNums = mutableListOf<Double>()
         val charArr = message.toCharArray()
         charArr.forEach { e ->
@@ -117,7 +118,7 @@ fun main() = application {
         tracker.attack = 0.00
         tracker.decay = 0.55
         tracker.sustain = 0.0
-        tracker.release = 0.4
+        tracker.release = 0.99
         var isTriggerOn = false
         val kickThresh = 0.75
 
@@ -129,7 +130,9 @@ fun main() = application {
         extend {
             animArr.forEachIndexed { i, a ->
 //                a((randNums[i] * 0.3 + frameCount * globalSpeed) % loopDelay)
-                a((randNums[i] * 0.3 + tracker.value()) % loopDelay)
+                a((randNums[i] * 0.3 + tracker.value()
+                        * 0.7 // INLINE SKETCHY
+                        ) % loopDelay)
             }
             drawer.clear(ColorRGBa.TRANSPARENT)
             drawer.circle(drawer.bounds.center, 10.0)
@@ -187,19 +190,21 @@ fun main() = application {
             println(sum)
 
 
-            flatGrid.forEach{ r ->
-                drawer.circle(
-                    (drawer.bounds.center * 0.5 * Vector2(animArr[0].pathSlider, 1.0) + Vector2(r.x, 0.0)),
-                    animArr[0].pathSlider * 60.0
-                )// + (sum * 0.005))
-//            drawer.pushTransforms()
-
-//            drawer.translate(
-//                drawer.bounds.center * Vector2(tracker.value(), 1.0)
-//            )
+            drawer.pushTransforms()
+            drawer.scale(2.0)
+            val speed = 0.1 // Control the scroll speed
+            val circleRadius = 20.0
+            drawer.translate(circleRadius* 0.5, circleRadius* 0.5)
+            drawer.translate(-drawer.bounds.center * Vector2(0.2, 0.0))
+            flatGrid.forEach { r ->
+                drawer.pushTransforms()
+//                val xPos = (drawer.bounds.center.x * 0.5 + r.x + animArr[0].pathSlider * width) % width
+                val xPos = animArr[0].whole * ( width*0.3 )
+                drawer.translate(xPos, 0.0)
+                drawer.circle(Vector2(r.x, r.y), circleRadius)
+                drawer.popTransforms()
             }
-//            drawer.popTransforms()
-
+            drawer.popTransforms()
 
 
 

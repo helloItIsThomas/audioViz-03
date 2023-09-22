@@ -7,6 +7,11 @@
     "circleSlider": 0.0
   },
   {
+    "time": 0.0,
+    "easing": "quint-in-out",
+    "whole": 0.0
+  },
+  {
     "time": 0.66,
     "easing": "quint-in-out",
     "pathSlider": 1.0,
@@ -17,6 +22,11 @@
     "easing": "quint-in-out",
     "pathSlider": 1.0,
     "circleSlider": 1.1
+  },
+  {
+    "time": 1.0,
+    "easing": "quint-in-out",
+    "whole": 1.0
   },
   {
     "time": 1.0,
